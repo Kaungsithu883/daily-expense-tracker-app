@@ -65,11 +65,12 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview')
 
-  useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.push('/sign-in')
-    }
-  }, [session, isPending, router])
+  // Auth check temporarily disabled for demo
+  // useEffect(() => {
+  //   if (!isPending && !session?.user) {
+  //     router.push('/sign-in')
+  //   }
+  // }, [session, isPending, router])
 
   useEffect(() => {
     const loadData = async () => {
@@ -117,16 +118,17 @@ export default function Dashboard() {
     }
   }
 
-  if (isPending || !session?.user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  // Auth loading check temporarily disabled
+  // if (isPending || !session?.user) {
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+  //         <p className="text-muted-foreground">Loading...</p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
@@ -136,19 +138,21 @@ export default function Dashboard() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Expense Tracker</h1>
             <p className="text-sm text-muted-foreground">
-              Welcome, {session.user.name || session.user.email}
+              Daily expense tracking and budget monitoring
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              await fetch('/api/auth/sign-out', { method: 'POST' })
-              router.push('/sign-in')
-              router.refresh()
-            }}
-          >
-            Sign Out
-          </Button>
+          {session?.user && (
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await fetch('/api/auth/sign-out', { method: 'POST' })
+                router.push('/sign-in')
+                router.refresh()
+              }}
+            >
+              Sign Out
+            </Button>
+          )}
         </div>
       </div>
 
