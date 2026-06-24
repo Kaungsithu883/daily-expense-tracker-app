@@ -26,23 +26,35 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     try {
       if (mode === 'sign-up') {
-        await authClient.signUp.email({
+        const result = await authClient.signUp.email({
           email,
           password,
           name,
         })
+        if (result.error) {
+          setError(result.error.message || 'Signup failed')
+          setIsLoading(false)
+          return
+        }
       } else {
-        await authClient.signIn.email({
+        const result = await authClient.signIn.email({
           email,
           password,
         })
+        if (result.error) {
+          setError(result.error.message || 'Sign in failed')
+          setIsLoading(false)
+          return
+        }
       }
 
+      // Delay redirect slightly to ensure session cookie is set
+      await new Promise(resolve => setTimeout(resolve, 500))
       router.push('/')
       router.refresh()
     } catch (err) {
+      console.error('[v0] Auth error:', err)
       setError(err instanceof Error ? err.message : 'Authentication failed')
-    } finally {
       setIsLoading(false)
     }
   }
