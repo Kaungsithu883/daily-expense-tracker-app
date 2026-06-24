@@ -10,8 +10,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Expense Tracker - Monitor Your Spending',
+  description: 'Track daily expenses with categories, set monthly budgets, and visualize spending patterns. Manage your 500,000 MMK allowance effectively.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -35,9 +35,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
   ],
+  userScalable: false,
 }
 
 export default function RootLayout({
