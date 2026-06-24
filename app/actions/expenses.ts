@@ -34,7 +34,7 @@ async function getUserId() {
 }
 
 export async function addExpense(
-  categoryId: string,
+  categoryId: string | null,
   amount: string,
   description: string,
   date: string
@@ -44,7 +44,7 @@ export async function addExpense(
   const result = await db.insert(expenses).values({
     id: crypto.randomUUID(),
     userId,
-    categoryId,
+    categoryId: categoryId || null,
     amount,
     description,
     date: new Date(date),
@@ -60,29 +60,35 @@ export async function getExpenses(year: number, month: number) {
   const startDate = new Date(year, month - 1, 1)
   const endDate = new Date(year, month, 0)
 
-  const result = await db
-    .select({
-      id: expenses.id,
-      amount: expenses.amount,
-      description: expenses.description,
-      date: expenses.date,
-      categoryId: expenses.categoryId,
-      categoryName: categories.name,
-      categoryColor: categories.color,
-      categoryIcon: categories.icon,
-    })
-    .from(expenses)
-    .leftJoin(categories, eq(expenses.categoryId, categories.id))
-    .where(
-      and(
-        eq(expenses.userId, userId),
-        gte(expenses.date, startDate),
-        lte(expenses.date, endDate)
+  try {
+    const result = await db
+      .select({
+        id: expenses.id,
+        amount: expenses.amount,
+        description: expenses.description,
+        date: expenses.date,
+        categoryId: expenses.categoryId,
+        categoryName: categories.name,
+        categoryColor: categories.color,
+        categoryIcon: categories.icon,
+      })
+      .from(expenses)
+      .leftJoin(categories, eq(expenses.categoryId, categories.id))
+      .where(
+        and(
+          eq(expenses.userId, userId),
+          gte(expenses.date, startDate),
+          lte(expenses.date, endDate)
+        )
       )
-    )
-    .orderBy(desc(expenses.date))
+      .orderBy(desc(expenses.date))
 
-  return result
+    return result
+  } catch (err) {
+    console.error('[v0] Error fetching expenses:', err)
+    // Return empty array if query fails
+    return []
+  }
 }
 
 export async function deleteExpense(expenseId: string) {

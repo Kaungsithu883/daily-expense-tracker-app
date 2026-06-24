@@ -44,13 +44,14 @@ export function ExpenseForm({ onSuccess }: { onSuccess?: () => void }) {
     setIsLoading(true)
 
     try {
-      if (!categoryId || !amount) {
-        throw new Error('Please fill in all required fields')
+      if (!amount) {
+        throw new Error('Please enter an amount')
       }
 
-      await addExpense(categoryId, amount, description, date)
+      await addExpense(categoryId || null, amount, description, date)
       setAmount('')
       setDescription('')
+      setCategoryId('')
       setDate(new Date().toISOString().split('T')[0])
       onSuccess?.()
     } catch (err) {
