@@ -1,77 +1,63 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { nextCookies } from 'better-auth/next-js'
 import { db } from './db'
 import * as schema from './db/schema'
 
-const getBaseURL = () => {
-  if (process.env.BETTER_AUTH_URL) {
-    return process.env.BETTER_AUTH_URL
-  }
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
-  }
-  return process.env.V0_RUNTIME_URL || 'http://localhost:3000'
-}
+const baseURL =
+  process.env.BETTER_AUTH_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.V0_RUNTIME_URL ?? 'http://localhost:3000')
 
-const baseURL = getBaseURL()
-
-const getTrustedOrigins = () => {
-  const origins = [baseURL]
-  
-  // Add Vercel production URL
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    origins.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`)
-  }
-  
-  // Add Vercel preview URL
-  if (process.env.VERCEL_URL) {
-    origins.push(`https://${process.env.VERCEL_URL}`)
-  }
-  
-  // Add v0 runtime URL (preview environment)
-  if (process.env.V0_RUNTIME_URL) {
-    origins.push(process.env.V0_RUNTIME_URL)
-    // Also add variations for v0 runtime that might include subdomains
-    const runtimeUrl = new URL(process.env.V0_RUNTIME_URL)
-    origins.push(runtimeUrl.origin)
-  }
-  
-  // Add localhost for development
-  if (process.env.NODE_ENV === 'development') {
-    origins.push('http://localhost:3000')
-    origins.push('http://localhost:3001')
-  }
-  
-  return Array.from(new Set(origins.filter(Boolean)))
-}
+const trustedOrigins = [
+  ...(process.env.NODE_ENV === 'development'
+    ? [
+        'http://localhost:3000',
+        ...(process.env.V0_RUNTIME_URL ? [process.env.V0_RUNTIME_URL] : []),
+        ...(process.env.V0_DEV_APP_URL ? [process.env.V0_DEV_APP_URL] : []),
+        ...(process.env.V0_BUILD_URL ? [process.env.V0_BUILD_URL] : []),
+        ...(process.env.V0_SANDBOX_URL ? [process.env.V0_SANDBOX_URL] : []),
+      ]
+    : []),
+  ...(process.env.NODE_ENV === 'production'
+    ? [
+        ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+        ...(process.env.VERCEL_PROJECT_PRODUCTION_URL
+          ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
+          : []),
+      ]
+    : []),
+]
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,
   }),
-  emailAndPassword: {
-    enabled: true,
-    autoSignInAfterSignUp: true,
-    sendResetPasswordEmail: async () => true,
-  },
-  emailVerification: {
-    sendOnSignUp: false,
-    autoSignInAfterVerification: false,
-  },
   baseURL,
   basePath: '/api/auth',
-  trustedOrigins: getTrustedOrigins(),
-  advanced: {
-    defaultCookieAttributes:
-      process.env.NODE_ENV === 'development'
-        ? {
-            sameSite: 'none',
-            secure: true,
-          }
-        : undefined,
+  trustedOrigins,
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: true,
+    requireEmailVerification: false,
   },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+  },
+  plugins: [nextCookies()],
+  ...(process.env.NODE_ENV === 'development'
+    ? {
+        advanced: {
+          defaultCookieAttributes: {
+            sameSite: 'none' as const,
+            secure: true,
+          },
+        },
+      }
+    : {}),
 })
