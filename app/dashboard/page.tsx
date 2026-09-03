@@ -72,6 +72,8 @@ export default function Dashboard() {
   }, [session, isPending, router])
 
   useEffect(() => {
+    if (isPending || !session?.user) return
+
     const loadData = async () => {
       setIsLoading(true)
       try {
@@ -132,7 +134,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -212,7 +214,7 @@ export default function Dashboard() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Add Expense Form */}
-                  <div className="lg:col-span-1">
+                  <div id="add-expense" className="lg:col-span-1">
                     <ExpenseForm onSuccess={handleRefresh} />
                   </div>
 
@@ -254,7 +256,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* Category Manager */}
-                  <div className="lg:col-span-1">
+                  <div id="profile" className="lg:col-span-1">
                     <CategoryManager onCategoryAdded={handleRefresh} />
                   </div>
                 </div>
@@ -263,6 +265,13 @@ export default function Dashboard() {
           </>
         )}
       </div>
+
+      <nav aria-label="Dashboard navigation" className="fixed inset-x-4 bottom-4 z-20 mx-auto flex max-w-md items-center justify-around rounded-3xl border border-border bg-card/90 p-2 shadow-2xl backdrop-blur-xl md:inset-x-auto md:right-8 md:bottom-8 md:mx-0 md:max-w-none md:gap-2 md:rounded-2xl">
+        <button onClick={() => setActiveTab('overview')} className="rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">Dashboard</button>
+        <button onClick={() => { setActiveTab('overview'); document.getElementById('add-expense')?.scrollIntoView({ behavior: 'smooth' }) }} className="rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90">Add expense</button>
+        <button onClick={() => setActiveTab('details')} className="rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">Categories</button>
+        <button onClick={() => { setActiveTab('details'); document.getElementById('profile')?.scrollIntoView({ behavior: 'smooth' }) }} className="rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">Profile</button>
+      </nav>
     </div>
   )
 }
