@@ -11,6 +11,7 @@ import { BudgetSetter } from '@/components/budget-setter'
 import { CategoryManager } from '@/components/category-manager'
 import { DailyBreakdown } from '@/components/daily-breakdown'
 import { CategoryBreakdown } from '@/components/category-breakdown'
+import { ProfilePanel } from '@/components/profile-panel'
 import { Button } from '@/components/ui/button'
 import {
   getExpenses,
@@ -256,8 +257,21 @@ export default function Dashboard() {
                   </div>
 
                   {/* Category Manager */}
-                  <div id="profile" className="lg:col-span-1">
-                    <CategoryManager onCategoryAdded={handleRefresh} />
+                  <div className="flex flex-col gap-6 lg:col-span-1">
+                    <div id="categories">
+                      <CategoryManager onCategoryAdded={handleRefresh} />
+                    </div>
+                    <div id="profile">
+                      <ProfilePanel
+                        name={session.user.name}
+                        email={session.user.email}
+                        onSignOut={async () => {
+                          await fetch('/api/auth/sign-out', { method: 'POST' })
+                          router.replace('/admin')
+                          router.refresh()
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -269,7 +283,7 @@ export default function Dashboard() {
       <nav aria-label="Dashboard navigation" className="fixed inset-x-4 bottom-4 z-20 mx-auto flex max-w-md items-center justify-around rounded-3xl border border-border bg-card/90 p-2 shadow-2xl backdrop-blur-xl md:inset-x-auto md:right-8 md:bottom-8 md:mx-0 md:max-w-none md:gap-2 md:rounded-2xl">
         <button onClick={() => setActiveTab('overview')} className="rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">Dashboard</button>
         <button onClick={() => { setActiveTab('overview'); document.getElementById('add-expense')?.scrollIntoView({ behavior: 'smooth' }) }} className="rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90">Add expense</button>
-        <button onClick={() => setActiveTab('details')} className="rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">Categories</button>
+        <button onClick={() => { setActiveTab('details'); document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' }) }} className="rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">Categories</button>
         <button onClick={() => { setActiveTab('details'); document.getElementById('profile')?.scrollIntoView({ behavior: 'smooth' }) }} className="rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground">Profile</button>
       </nav>
     </div>
