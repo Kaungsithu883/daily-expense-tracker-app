@@ -36,17 +36,19 @@ export const session = pgTable('session', {
 export const account = pgTable('account', {
   id: text('id').primaryKey().notNull(),
   accountId: text('accountId').notNull(),
-  provider: text('provider').notNull(),
-  providerAccountId: text('providerAccountId').notNull(),
-  refreshToken: text('refreshToken'),
-  accessToken: text('accessToken'),
-  expiresAt: integer('expiresAt'),
-  password: text('password'),
-  createdAt: timestamp('createdAt').notNull(),
-  updatedAt: timestamp('updatedAt').notNull(),
+  providerId: text('providerId').notNull(),
   userId: text('userId')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
+  password: text('password'),
+  accessToken: text('accessToken'),
+  refreshToken: text('refreshToken'),
+  accessTokenExpiresAt: timestamp('accessTokenExpiresAt'),
+  refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt'),
+  scope: text('scope'),
+  idToken: text('idToken'),
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
 })
 
 export const verification = pgTable('verification', {
@@ -88,7 +90,7 @@ export const monthlyBudgets = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     month: integer('month').notNull(),
     year: integer('year').notNull(),
-    budgetLimit: decimal('budget_limit', { precision: 15, scale: 2 })
+    budgetLimit: decimal('budgetLimit', { precision: 15, scale: 2 })
       .notNull()
       .default('500000'),
     createdAt: timestamp('createdAt').notNull().defaultNow(),

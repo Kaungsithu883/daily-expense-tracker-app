@@ -20,16 +20,9 @@ import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-const DEMO_USER_ID = 'demo-user-123' // Demo mode - temporary
-
 async function getUserId() {
-  // Demo mode - return demo user ID
-  if (process.env.DEMO_MODE === 'true' || process.env.NODE_ENV === 'development') {
-    return DEMO_USER_ID
-  }
-  
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) redirect('/sign-in')
+  if (!session?.user) redirect('/admin')
   return session.user.id
 }
 

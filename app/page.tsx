@@ -1,267 +1,53 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSession } from '@/lib/auth-client'
-import { MonthNavigator } from '@/components/month-navigator'
-import { MonthlySummary } from '@/components/monthly-summary'
-import { ExpenseForm } from '@/components/expense-form'
-import { ExpenseList } from '@/components/expense-list'
-import { BudgetSetter } from '@/components/budget-setter'
-import { CategoryManager } from '@/components/category-manager'
-import { DailyBreakdown } from '@/components/daily-breakdown'
-import { CategoryBreakdown } from '@/components/category-breakdown'
-import { Button } from '@/components/ui/button'
-import {
-  getExpenses,
-  getMonthlyStats,
-  getDailyStats,
-  getCategoryStats,
-} from '@/app/actions/expenses'
+import Link from 'next/link'
+import { ArrowRight, BarChart3, CircleDollarSign, Moon, ShieldCheck, Sun } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
-interface Expense {
-  id: string
-  amount: string
-  description: string | null
-  date: Date
-  categoryId: string
-  categoryName: string | null
-  categoryColor: string | null
-  categoryIcon: string | null
-}
-
-interface MonthlyStats {
-  totalSpent: number
-  budgetLimit: number
-  month: number
-  year: number
-}
-
-interface DailyData {
-  date: Date
-  total: number
-  count: number
-}
-
-interface CategoryData {
-  categoryId: string
-  categoryName: string
-  categoryColor: string
-  categoryIcon: string
-  total: number
-  count: number
-}
-
-export default function Dashboard() {
-  const { data: session, isPending } = useSession()
-  const router = useRouter()
-
-  const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
-  const [year, setYear] = useState<number>(new Date().getFullYear())
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [monthlyStats, setMonthlyStats] = useState<MonthlyStats | null>(null)
-  const [dailyStats, setDailyStats] = useState<DailyData[]>([])
-  const [categoryStats, setCategoryStats] = useState<CategoryData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview')
-
-  // Auth check temporarily disabled for demo
-  // useEffect(() => {
-  //   if (!isPending && !session?.user) {
-  //     router.push('/sign-in')
-  //   }
-  // }, [session, isPending, router])
+export default function LandingPage() {
+  const [dark, setDark] = useState(false)
 
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true)
-      try {
-        const [expensesData, statsData, dailyData, categoryData] = await Promise.all([
-          getExpenses(year, month),
-          getMonthlyStats(year, month),
-          getDailyStats(year, month),
-          getCategoryStats(year, month),
-        ])
-        setExpenses(expensesData)
-        setMonthlyStats(statsData)
-        setDailyStats(dailyData)
-        setCategoryStats(categoryData)
-      } catch (err) {
-        console.error('Failed to load data:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadData()
-  }, [month, year])
-
-  const handleMonthChange = (newMonth: number, newYear: number) => {
-    setMonth(newMonth)
-    setYear(newYear)
-  }
-
-  const handleRefresh = async () => {
-    try {
-      const [expensesData, statsData, dailyData, categoryData] = await Promise.all([
-        getExpenses(year, month),
-        getMonthlyStats(year, month),
-        getDailyStats(year, month),
-        getCategoryStats(year, month),
-      ])
-      setExpenses(expensesData)
-      setMonthlyStats(statsData)
-      setDailyStats(dailyData)
-      setCategoryStats(categoryData)
-    } catch (err) {
-      console.error('Failed to refresh data:', err)
-    }
-  }
-
-  // Auth loading check temporarily disabled
-  // if (isPending || !session?.user) {
-  //   return (
-  //     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-  //         <p className="text-muted-foreground">Loading...</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+    document.documentElement.classList.toggle('dark', dark)
+  }, [dark])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-      {/* Header */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Expense Tracker</h1>
-            <p className="text-sm text-muted-foreground">
-              Daily expense tracking and budget monitoring
-            </p>
-          </div>
-          {session?.user && (
-            <Button
-              variant="outline"
-              onClick={async () => {
-                await fetch('/api/auth/sign-out', { method: 'POST' })
-                router.push('/sign-in')
-                router.refresh()
-              }}
-            >
-              Sign Out
-            </Button>
-          )}
+    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 md:px-8">
+        <div className="flex items-center gap-3 font-semibold tracking-tight">
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"><CircleDollarSign /></span>
+          <span>Our Expense Tracker</span>
         </div>
-      </div>
+        <div className="flex items-center gap-2">
+          <button aria-label="Toggle theme" onClick={() => setDark((value) => !value)} className="flex size-10 items-center justify-center rounded-full border border-border bg-card/70 text-muted-foreground backdrop-blur-xl transition hover:text-foreground">
+            {dark ? <Sun /> : <Moon />}
+          </button>
+          <Link href="/admin" className="hidden rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted sm:block">Log in</Link>
+        </div>
+      </nav>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-        {/* Month Navigator */}
-        <MonthNavigator
-          month={month}
-          year={year}
-          onMonthChange={handleMonthChange}
-        />
-
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading expenses...</p>
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-12 md:grid-cols-[1.1fr_.9fr] md:px-8 md:pb-28 md:pt-20">
+        <div className="flex flex-col gap-7">
+          <span className="w-fit rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">A calmer way to spend</span>
+          <h1 className="max-w-2xl text-balance text-5xl font-semibold tracking-[-0.06em] md:text-7xl">Know where your money goes.</h1>
+          <p className="max-w-xl text-pretty text-lg leading-8 text-muted-foreground">A private, beautifully simple space for you and your household to track expenses, protect your budget, and make better everyday decisions.</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/admin" className="group inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 font-semibold text-primary-foreground shadow-xl shadow-primary/20 transition hover:-translate-y-0.5">Open your tracker <ArrowRight className="transition group-hover:translate-x-1" /></Link>
+            <a href="#features" className="rounded-full border border-border bg-card/70 px-5 py-3 font-semibold backdrop-blur-xl transition hover:bg-muted">Explore features</a>
           </div>
-        ) : (
-          <>
-            {/* Monthly Summary */}
-            {monthlyStats && (
-              <MonthlySummary
-                totalSpent={monthlyStats.totalSpent}
-                budgetLimit={monthlyStats.budgetLimit}
-                month={month}
-                year={year}
-              />
-            )}
+        </div>
+        <div className="relative rounded-[2rem] border border-border bg-card/70 p-5 shadow-2xl shadow-primary/10 backdrop-blur-2xl">
+          <div className="flex items-center justify-between border-b border-border pb-5"><div><p className="text-sm text-muted-foreground">This month</p><p className="mt-1 text-3xl font-semibold tracking-tight">MMK 286,400</p></div><span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">57% used</span></div>
+          <div className="flex h-48 items-end gap-2 py-6">{[34, 54, 42, 68, 48, 78, 58, 86, 62, 72, 50, 66].map((height, index) => <div key={index} className="flex-1 rounded-t-lg bg-primary/20" style={{ height: `${height}%` }}><div className="h-1/2 rounded-t-lg bg-primary" /></div>)}</div>
+          <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-4"><span className="flex size-10 items-center justify-center rounded-xl bg-card text-primary"><ShieldCheck /></span><div><p className="font-medium">You are on track</p><p className="text-sm text-muted-foreground">Keep daily spending under MMK 16,800</p></div></div>
+        </div>
+      </section>
 
-            {/* Tab Navigation */}
-            <div className="flex gap-2 border-b border-border">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`px-4 py-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'overview'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab('details')}
-                className={`px-4 py-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'details'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Details
-              </button>
-            </div>
-
-            {/* Overview Tab */}
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Add Expense Form */}
-                  <div className="lg:col-span-1">
-                    <ExpenseForm onSuccess={handleRefresh} />
-                  </div>
-
-                  {/* Budget Setter */}
-                  <div className="lg:col-span-2">
-                    <BudgetSetter
-                      month={month}
-                      year={year}
-                      onUpdate={handleRefresh}
-                    />
-                  </div>
-                </div>
-
-                {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <DailyBreakdown
-                    data={dailyStats}
-                    budgetLimit={monthlyStats?.budgetLimit || 500000}
-                    month={month}
-                  />
-                  <CategoryBreakdown data={categoryStats} />
-                </div>
-              </div>
-            )}
-
-            {/* Details Tab */}
-            {activeTab === 'details' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Expense List */}
-                  <div className="lg:col-span-2 bg-card rounded-lg border border-border p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-foreground">All Expenses</h3>
-                      <span className="text-sm text-muted-foreground">
-                        {expenses.length} transaction{expenses.length !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                    <ExpenseList expenses={expenses} onDelete={handleRefresh} />
-                  </div>
-
-                  {/* Category Manager */}
-                  <div className="lg:col-span-1">
-                    <CategoryManager onCategoryAdded={handleRefresh} />
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+      <section id="features" className="mx-auto grid max-w-6xl gap-4 px-5 pb-20 md:grid-cols-3 md:px-8"><Feature icon={<BarChart3 />} title="Clear insights" text="See daily patterns and category trends without the spreadsheet headache." /><Feature icon={<ShieldCheck />} title="Private by default" text="Separate secure accounts keep your personal spending yours." /><Feature icon={<CircleDollarSign />} title="Built for daily life" text="Add an expense in seconds and stay close to your monthly plan." /></section>
+    </main>
   )
+}
+
+function Feature({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
+  return <article className="rounded-3xl border border-border bg-card/60 p-6 backdrop-blur-xl"><div className="mb-8 flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">{icon}</div><h2 className="text-lg font-semibold">{title}</h2><p className="mt-2 leading-6 text-muted-foreground">{text}</p></article>
 }
