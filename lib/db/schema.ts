@@ -90,7 +90,7 @@ export const monthlyBudgets = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     month: integer('month').notNull(),
     year: integer('year').notNull(),
-    budgetLimit: decimal('budget_limit', { precision: 15, scale: 2 })
+    budgetLimit: decimal('budgetLimit', { precision: 15, scale: 2 })
       .notNull()
       .default('500000'),
     createdAt: timestamp('createdAt').notNull().defaultNow(),
