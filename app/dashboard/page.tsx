@@ -96,7 +96,7 @@ export default function Dashboard() {
     }
 
     loadData()
-  }, [month, year])
+  }, [month, year, isPending, session?.user?.id])
 
   const handleMonthChange = (newMonth: number, newYear: number) => {
     setMonth(newMonth)
